@@ -117,11 +117,12 @@ async function loadVotesFromCloud() {
 }
 
 // =========================
-// 保存/更新投票标题到云端
+// 保存/更新投票标题到云端（固定 key，确保唯一）
 // =========================
 async function loadTitleFromCloud() {
   try {
     const query = new AV.Query('VoteTitle');
+    query.equalTo('key', 'mainTitle'); // 固定 key
     query.limit(1);
     const results = await query.find();
     if (results.length > 0) {
@@ -150,6 +151,7 @@ async function saveNewTitle() {
     } else {
       const VoteTitle = AV.Object.extend('VoteTitle');
       titleObj = new VoteTitle();
+      titleObj.set('key', 'mainTitle'); // 设置固定 key
       window.voteTitleObj = titleObj;
     }
     titleObj.set('title', newTitle);
@@ -242,7 +244,6 @@ async function resetAll() {
     const query = new AV.Query('Vote');
     const results = await query.find();
     for (const vote of results) {
-      // 所有人可写 ACL，避免 403
       vote.setACL(new AV.ACL({ "*": { read: true, write: true } }));
       await vote.destroy();
     }
