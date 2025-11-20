@@ -5,11 +5,97 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.2, maximum-scale=2.0">
 <title>高一学部守楼层</title>
 
+<!-- LeanCloud SDK -->
 <script src="https://cdn1.lncld.net/static/js/3.14.1/av-min.js"></script>
+<!-- 自定义逻辑 -->
 <script src="app.js"></script>
 
 <style>
-  /* 保留你原本的 CSS 样式 */
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    margin: 20px;
+    background: #f7f7f7;
+    font-size: 20px;
+  }
+
+  h2, h3 {
+    margin-bottom: 10px;
+  }
+
+  .card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+
+  input[type="text"] {
+    font-size: 20px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    width: 80%;
+  }
+
+  button {
+    font-size: 20px;
+    padding: 10px 16px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background: #4e8cff;
+    color: white;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #3b6ed6;
+  }
+
+  .danger {
+    background: #ff6b6b;
+  }
+
+  .danger:hover {
+    background: #e65555;
+  }
+
+  .disabled {
+    color: gray;
+  }
+
+  .selected-list {
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  /* Modal 弹窗 */
+  .modal-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+
+  .modal {
+    background: #fff;
+    padding: 20px;
+    width: 80%;
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .modal input {
+    width: 90%;
+    font-size: 20px;
+    padding: 8px;
+    border-radius: 6px;
+  }
 </style>
 </head>
 <body>
