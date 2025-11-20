@@ -80,14 +80,11 @@
     line-height: 1.5;
   }
 
-  /* ------------------------------------------
-     页面加载前隐藏全部内容（解决闪烁）
-  -------------------------------------------*/
+  /* 页面加载前隐藏内容 */
   .hidden-before-load {
     visibility: hidden;
   }
 
-  /* Modal */
   .modal-bg {
     position: fixed;
     top: 0; left: 0;
@@ -115,35 +112,10 @@
     border-radius: 8px;
     border: 1px solid #ccc;
   }
-
-  @media (max-width: 480px) {
-    body {
-      font-size: 18px;
-      margin: 8px;
-    }
-
-    .card {
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-
-    button {
-      font-size: 18px;
-      padding: 8px 12px;
-    }
-
-    .modal {
-      padding: 14px;
-    }
-
-    .modal input {
-      font-size: 18px;
-    }
-  }
 </style>
 </head>
 
-<!-- ⭐⭐⭐ 关键修改：加入隐藏类，避免加载前显示旧标题 ⭐⭐⭐ -->
+<!-- 这里加上了 hidden-before-load -->
 <body class="hidden-before-load">
 
 <div class="card">
@@ -184,18 +156,6 @@
 
 <script src="libs/av-min.js"></script>
 <script src="app.js"></script>
-
-<!-- ⭐⭐⭐ 关键 JS：加载完成后再显示页面 ⭐⭐⭐ -->
-<script>
-window.addEventListener('DOMContentLoaded', () => {
-  Promise.all([
-    loadVotesFromCloud(),
-    loadTitleFromCloud()
-  ]).then(() => {
-    document.body.classList.remove('hidden-before-load');
-  });
-});
-</script>
 
 </body>
 </html>
