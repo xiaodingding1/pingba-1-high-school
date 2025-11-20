@@ -202,17 +202,16 @@ async function resetAll() {
   init();
 }
 
-// =========================
-// 新增：查看投票详情
-// =========================
 document.getElementById("viewDetailsBtn").onclick = function() {
   window.location.href = "details.html";
 };
 
-// =========================
-// 页面加载
-// =========================
 window.addEventListener('DOMContentLoaded', () => {
-  loadVotesFromCloud();
-  loadTitleFromCloud();
+  Promise.all([
+    loadVotesFromCloud(),
+    loadTitleFromCloud()
+  ]).then(() => {
+    document.body.classList.remove('hidden-before-load');
+  });
 });
+
