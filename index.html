@@ -2,44 +2,43 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.2, maximum-scale=2.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
 <title>高一学部守楼层</title>
-
 
 <style>
   body {
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    margin: 20px;
+    margin: 15px;
     background: #f7f7f7;
-    font-size: 20px;
+    font-size: 16px;
   }
 
   h2, h3 {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .card {
     background: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
   }
 
   input[type="text"] {
-    font-size: 20px;
-    padding: 6px 10px;
-    border-radius: 6px;
+    font-size: 16px;
+    padding: 5px 8px;
+    border-radius: 5px;
     border: 1px solid #ccc;
-    width: 80%;
+    width: 75%;
   }
 
   button {
-    font-size: 20px;
-    padding: 10px 16px;
-    margin: 10px 0;
+    font-size: 16px;
+    padding: 8px 12px;
+    margin: 8px 0;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     background: #4e8cff;
     color: white;
     cursor: pointer;
@@ -62,8 +61,8 @@
   }
 
   .selected-list {
-    margin-top: 10px;
-    line-height: 1.6;
+    margin-top: 8px;
+    line-height: 1.4;
   }
 
   /* Modal 弹窗 */
@@ -80,17 +79,17 @@
 
   .modal {
     background: #fff;
-    padding: 20px;
-    width: 80%;
-    border-radius: 12px;
+    padding: 15px;
+    width: 85%;
+    border-radius: 10px;
     text-align: center;
   }
 
   .modal input {
     width: 90%;
-    font-size: 20px;
-    padding: 8px;
-    border-radius: 6px;
+    font-size: 16px;
+    padding: 6px;
+    border-radius: 5px;
   }
 </style>
 </head>
@@ -112,7 +111,6 @@
   </div>
 </div>
 
-
 <div class="card">
   <label>姓名：<br><input type="text" id="teacherName" /></label>
 </div>
@@ -131,7 +129,6 @@
 <div class="card">
   <button class="danger" onclick="resetAll()">⚠ 重置全部投票</button>
 </div>
-
 
 <!-- LeanCloud SDK -->
 <script src="libs/av-min.js"></script>
