@@ -10,242 +10,140 @@ AV.init({
 // =========================
 // 楼层与数据初始化
 // =========================
-const floorList = [
-  "五教一楼", "五教二楼",
-  "四教一楼", "四教二楼", "四教三楼", "四教四楼",
-  "合班楼"
-];
-
-// 每个楼层最多可选2人
-const assigned = {};
-floorList.forEach(f => assigned[f] = []);
-
-// 记录老师选择
-const teacherChoices = {};
-const submitTime = {};
+const floorList = ["五教一楼","五教二楼","四教一楼","四教二楼","四教三楼","四教四楼","合班楼"];
+const assigned = {}, teacherChoices = {}, submitTime = {};
+floorList.forEach(f=>assigned[f]=[]);
 
 // =========================
-// 页面初始化函数
+// 页面初始化
 // =========================
 function init() {
-  const floorDiv = document.getElementById('floors');
-  floorDiv.innerHTML = "";
-
-  floorList.forEach(floor => {
-    const id = "f_" + floor;
-
-    const wrapper = document.createElement("div");
-    wrapper.style.margin = "8px 0";
-
-    const check = document.createElement("input");
-    check.type = "checkbox";
-    check.id = id;
-    check.value = floor;
-
-    if (assigned[floor].length >= 2) check.disabled = true;
-
-    const label = document.createElement("label");
-    label.setAttribute("for", id);
-    label.textContent = `${floor} (已选 ${assigned[floor].length}/2)`;
-    if (assigned[floor].length >= 2) label.classList.add("disabled");
-
-    wrapper.appendChild(check);
-    wrapper.appendChild(label);
-    floorDiv.appendChild(wrapper);
+  const floorsDiv=document.getElementById('floors');
+  floorsDiv.innerHTML="";
+  floorList.forEach(f=>{
+    const id="f_"+f;
+    const wrapper=document.createElement("div");
+    wrapper.style.margin="8px 0";
+    const check=document.createElement("input");
+    check.type="checkbox"; check.id=id; check.value=f;
+    if(assigned[f].length>=2) check.disabled=true;
+    const label=document.createElement("label");
+    label.setAttribute("for",id);
+    label.textContent=`${f} (已选 ${assigned[f].length}/2)`;
+    if(assigned[f].length>=2) label.classList.add("disabled");
+    wrapper.appendChild(check); wrapper.appendChild(label);
+    floorsDiv.appendChild(wrapper);
   });
-
   updatePublicBoard();
 }
 
 // =========================
-// 获取北京时间字符串
+// 北京时间
 // =========================
 function getBeijingTimeString() {
-  const now = new Date();
-  const beijingStr = now.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
-  const date = new Date(beijingStr);
-  const y = String(date.getFullYear()).slice(2);
-  const m = String(date.getMonth() + 1).padStart(2,'0');
-  const d = String(date.getDate()).padStart(2,'0');
-  const hh = String(date.getHours()).padStart(2,'0');
-  const mm = String(date.getMinutes()).padStart(2,'0');
-  const ss = String(date.getSeconds()).padStart(2,'0');
-  return `${y}/${m}/${d},${hh}:${mm}:${ss}`;
+  const now=new Date();
+  const str=now.toLocaleString("zh-CN",{timeZone:"Asia/Shanghai"});
+  const d=new Date(str);
+  const pad=s=>String(s).padStart(2,'0');
+  return `${String(d.getFullYear()).slice(2)}/${pad(d.getMonth()+1)}/${pad(d.getDate())},${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
 // =========================
-// 更新投票显示
+// 更新公共投票板
 // =========================
-function updatePublicBoard() {
-  const board = document.getElementById('publicBoard');
-  let html = "";
-
-  floorList.forEach(f => {
-    if (assigned[f].length === 0) {
-      html += `${f}：<span style="color:gray">无人选择</span><br>`;
-    } else {
-      const list = assigned[f].map(n => `${n}（${submitTime[n]}）`);
-      html += `${f}：${list.join("，")}<br>`;
-    }
-  });
-
-  board.innerHTML = html;
+function updatePublicBoard(){
+  const board=document.getElementById('publicBoard');
+  board.innerHTML=floorList.map(f=>{
+    if(assigned[f].length===0) return `${f}：<span style="color:gray">无人选择</span>`;
+    return `${f}：${assigned[f].map(n=>`${n}（${submitTime[n]}）`).join("，")}`;
+  }).join("<br>");
 }
 
 // =========================
-// 加载云端投票
+// 拉取云端投票
 // =========================
-async function loadVotesFromCloud() {
-  try {
-    const query = new AV.Query('Vote');
-    const results = await query.find();
-
-    results.forEach(vote => {
-      const name = vote.get('teacher');
-      const choices = vote.get('choices');
-      const time = vote.get('time');
-
-      teacherChoices[name] = choices;
-      choices.forEach(f => assigned[f].push(name));
-      submitTime[name] = time;
+async function loadVotesFromCloud(){
+  try{
+    const results=await new AV.Query('Vote').find();
+    results.forEach(v=>{
+      const n=v.get('teacher'), c=v.get('choices'), t=v.get('time');
+      teacherChoices[n]=c; c.forEach(f=>assigned[f].push(n)); submitTime[n]=t;
     });
-
     init();
-  } catch (e) {
-    console.error(e);
-  }
+  }catch(e){console.error(e);}
 }
 
 // =========================
-// 保存/更新投票标题到云端（固定 key，确保唯一）
+// 拉取投票标题
 // =========================
-async function loadTitleFromCloud() {
-  try {
-    const query = new AV.Query('VoteTitle');
-    query.equalTo('key', 'mainTitle'); // 固定 key
-    query.limit(1);
-    const results = await query.find();
-    if (results.length > 0) {
-      const titleObj = results[0];
-      const title = titleObj.get('title');
-      document.getElementById('mainTitle').textContent = title;
-      window.voteTitleObj = titleObj; // 缓存对象方便更新
-    }
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-async function saveNewTitle() {
-  const newTitle = document.getElementById('newTitleInput').value.trim();
-  if (!newTitle) return;
-
-  document.getElementById('mainTitle').textContent = newTitle;
-  closeModal();
-
-  try {
-    let titleObj;
-    if (window.voteTitleObj) {
-      titleObj = window.voteTitleObj;
-    } else {
-      const VoteTitle = AV.Object.extend('VoteTitle');
-      titleObj = new VoteTitle();
-      titleObj.set('key', 'mainTitle'); // 设置固定 key
-      window.voteTitleObj = titleObj;
-    }
-    titleObj.set('title', newTitle);
-    titleObj.setACL(new AV.ACL({ "*": { read: true, write: true } })); // 所有人可读写
-    await titleObj.save();
-  } catch (e) {
-    console.error(e);
-  }
+async function loadTitleFromCloud(){
+  try{
+    const q=new AV.Query('VoteTitle');
+    q.equalTo('key','mainTitle'); q.limit(1);
+    const r=await q.find();
+    if(r.length>0){ window.voteTitleObj=r[0]; document.getElementById('mainTitle').textContent=r[0].get('title'); }
+  }catch(e){console.error(e);}
 }
 
 // =========================
-// 提交选择（保存到本地和云端）
+// 保存新标题
 // =========================
-document.getElementById('submitBtn').onclick = async function() {
-  const name = document.getElementById('teacherName').value.trim();
-  if (!name) return;
+async function saveNewTitle(){
+  const t=document.getElementById('newTitleInput').value.trim();
+  if(!t) return; closeModal();
+  document.getElementById('mainTitle').textContent=t;
+  try{
+    let obj=window.voteTitleObj;
+    if(!obj){ const VoteTitle=AV.Object.extend('VoteTitle'); obj=new VoteTitle(); obj.set('key','mainTitle'); window.voteTitleObj=obj; }
+    obj.set('title',t); obj.setACL(new AV.ACL({"*":{read:true,write:true}})); await obj.save();
+  }catch(e){console.error(e);}
+}
 
-  const choices = Array.from(document.querySelectorAll('#floors input:checked')).map(c => c.value);
-  if (choices.length !== 2) return;
-
-  // 撤销本地原选择
-  if (teacherChoices[name]) {
-    teacherChoices[name].forEach(f => {
-      assigned[f] = assigned[f].filter(n => n !== name);
-    });
-  }
-
-  // 检查人数上限
-  for (const f of choices) {
-    if (assigned[f].length >= 2) return;
-  }
-
-  // 登记本地数据
-  teacherChoices[name] = choices;
-  choices.forEach(f => assigned[f].push(name));
-  submitTime[name] = getBeijingTimeString();
-
-  // 保存到 LeanCloud
-  try {
-    const Vote = AV.Object.extend('Vote');
-    const query = new AV.Query('Vote');
-    query.equalTo('teacher', name);
-    const results = await query.find();
-
-    let voteObj;
-    if (results.length > 0) {
-      voteObj = results[0]; // 更新已有记录
-    } else {
-      voteObj = new Vote(); // 新建记录
-    }
-
-    voteObj.set('teacher', name);
-    voteObj.set('choices', choices);
-    voteObj.set('time', submitTime[name]);
-    voteObj.setACL(new AV.ACL({ "*": { read: true, write: true } }));
-
-    await voteObj.save();
+// =========================
+// 提交选择
+// =========================
+document.getElementById('submitBtn').onclick=async function(){
+  const name=document.getElementById('teacherName').value.trim();
+  if(!name) return;
+  const choices=Array.from(document.querySelectorAll('#floors input:checked')).map(c=>c.value);
+  if(choices.length!==2) return;
+  if(teacherChoices[name]) teacherChoices[name].forEach(f=>assigned[f]=assigned[f].filter(n=>n!==name));
+  for(const f of choices) if(assigned[f].length>=2) return;
+  teacherChoices[name]=choices; choices.forEach(f=>assigned[f].push(name));
+  submitTime[name]=getBeijingTimeString();
+  try{
+    const Vote=AV.Object.extend('Vote'); const q=new AV.Query('Vote'); q.equalTo('teacher',name);
+    const r=await q.find();
+    let obj=r.length>0?r[0]:new Vote();
+    obj.set('teacher',name); obj.set('choices',choices); obj.set('time',submitTime[name]);
+    obj.setACL(new AV.ACL({"*":{read:true,write:true}})); await obj.save();
     init();
-  } catch (e) {
-    console.error(e);
-  }
+  }catch(e){console.error(e);}
 };
 
 // =========================
-// Modal 功能
+// Modal
 // =========================
-function openModal() { document.getElementById('modalBg').style.display = "flex"; }
-function closeModal() { document.getElementById('modalBg').style.display = "none"; }
+function openModal(){document.getElementById('modalBg').style.display="flex";}
+function closeModal(){document.getElementById('modalBg').style.display="none";}
 
 // =========================
-// 重置投票（同步云端）
+// 重置投票
 // =========================
-async function resetAll() {
-  floorList.forEach(f => assigned[f] = []);
-  for (const k in teacherChoices) delete teacherChoices[k];
-  for (const k in submitTime) delete submitTime[k];
-
-  try {
-    const query = new AV.Query('Vote');
-    const results = await query.find();
-    for (const vote of results) {
-      vote.setACL(new AV.ACL({ "*": { read: true, write: true } }));
-      await vote.destroy();
-    }
-  } catch (e) {
-    console.error(e);
-  }
-
+async function resetAll(){
+  floorList.forEach(f=>assigned[f]=[]);
+  Object.keys(teacherChoices).forEach(k=>delete teacherChoices[k]);
+  Object.keys(submitTime).forEach(k=>delete submitTime[k]);
+  try{
+    const results=await new AV.Query('Vote').find();
+    for(const v of results){ v.setACL(new AV.ACL({"*":{read:true,write:true}})); await v.destroy(); }
+  }catch(e){console.error(e);}
   init();
 }
 
 // =========================
-// 页面加载时拉取云端数据和标题
+// 页面加载
 // =========================
-window.addEventListener('DOMContentLoaded', () => {
-  loadVotesFromCloud();
-  loadTitleFromCloud();
+window.addEventListener('DOMContentLoaded',()=>{
+  loadVotesFromCloud(); loadTitleFromCloud();
 });
