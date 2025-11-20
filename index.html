@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>楼层监考选择</title>
+<style>
+  body { font-family: sans-serif; margin: 20px; }
+  .disabled { color: gray; }
+  .selected-list { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+<h2>期中监考楼层选择</h2>
+<label>姓名：<input type="text" id="teacherName" /></label>
+
+<h3>请选择两个楼层：</h3>
+<div id="floors"></div>
+
+<button id="submitBtn">提交</button>
+
+<h3>当前所有选择情况：</h3>
+<div id="publicBoard" class="selected-list"></div>
+
+<script>
+// =========================
+// 数据结构升级
+// =========================
+
+// 每个楼层最多可选 2 名老师
+const floorList = [
+  "五教一楼", "五教二楼", "四教二楼", "四教三楼", "四教四楼", "合班楼"
+];
+
+// 楼层记录： floor → [name1, name2]
+const assigned = {};  
+floorList.forEach(f => assigned[f] = []);
+
+// 老师记录： name → [floor1, floor2]
+const teacherChoices = {};
+
+
+// ========== 初始化 UI ==========
+function init() {
+  const floorDiv = document.getElementById('floors');
+  floorDiv.innerHTML = '';
+
+  floorList.forEach(floor => {
+    const id = 'f_' + floor;
+
+    const div = document.createElement('div');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = id;
+    checkbox.value = floor;
+
+    // 如果该楼层已经被两个人选中，则禁用
+    if (assigned[floor].length >= 2) {
+      checkbox.disabled = true;
+    }
+
+    const label = document.createElement('label');
+    label.setAttribute('for', id);
+    label.textContent = `${floor} (已选 ${assigned[floor].length}/2)`;
+
+    if (assigned[floor].length >= 2) {
+      label.classList.add('disabled');
+    }
+
+    div.appendChild(checkbox);
+    div.appendChild(label);
+    floorDiv.appendChild(div);
+  });
+
+  updatePublicBoard();
+}
+
+
+// ========== 公告栏 ==========
+function updatePublicBoard() {
+  const board = document.getElementById('publicBoard');
+
+  let html = "";
+  for (const floor of floorList) {
+    if (assigned[floor].length > 0) {
+      html += `${floor}：${assigned[floor].join("，")}<br/>`;
+    } else {
+      html += `${floor}：<span style='color:gray'>无人选择</span><br/>`;
+    }
+  }
+
+  board.innerHTML = html;
+}
+
+
+// ========== 提交处理 ==========
+document.getElementById('submitBtn').onclick = function() {
+  const name = document.getElementById('teacherName').value.trim();
+  if (!name) { alert("请输入姓名"); return; }
+
+  const choices = Array.from(document.querySelectorAll('#floors input:checked'))
+                      .map(c => c.value);
+  if (choices.length !== 2) {
+    alert("必须且只能选择两个楼层");
+    return;
+  }
+
+  // ========== 若该老师已经选过，需要撤销他之前的楼层占用 ==========
+  if (teacherChoices[name]) {
+    teacherChoices[name].forEach(floor => {
+      assigned[floor] = assigned[floor].filter(n => n !== name);
+    });
+  }
+
+  // 检查新选的楼层是否已满
+  for (const floor of choices) {
+    if (assigned[floor].length >= 2) {
+      alert(`${floor} 名额已满（2人），请重新选择！`);
+      return;
+    }
+  }
+
+  // ========== 登记新的选择 ==========
+  teacherChoices[name] = choices;
+  choices.forEach(floor => assigned[floor].push(name));
+
+  alert("提交成功！");
+  init();
+};
+
+
+// 初始化界面
+init();
+</script>
+</body>
+</html>
