@@ -2,44 +2,133 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<title>楼层监考选择</title>
+<title id="pageTitle">期中监考楼层选择</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
 <style>
-  body { font-family: sans-serif; margin: 20px; }
-  .disabled { color: gray; }
-  .selected-list { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+  body {
+    font-family: "微软雅黑", sans-serif;
+    margin: 12px;
+    font-size: 20px;        /* 手机端更大字体 */
+    background: #f5f7fa;
+  }
+
+  h2 {
+    font-size: 26px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .card {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    margin-bottom: 18px;
+  }
+
+  label {
+    font-size: 20px;
+  }
+
+  input[type="text"] {
+    width: 90%;
+    padding: 8px;
+    font-size: 20px;
+    margin-top: 6px;
+    border-radius: 8px;
+    border: 1px solid #bbb;
+  }
+
+  .floor-item {
+    padding: 8px 0;
+  }
+
+  .disabled {
+    color: gray;
+  }
+
+  .btn {
+    background: #2d8cf0;
+    border: none;
+    padding: 12px 20px;
+    color: white;
+    font-size: 20px;
+    border-radius: 8px;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    background: #1a73d9;
+  }
+
+  .btn-danger {
+    background: #d9534f;
+  }
+  .btn-danger:hover {
+    background: #b94440;
+  }
+
+  .selected-list {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 20px;
+  }
+
+  .controller {
+    margin-top: 20px;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
-<h2>期中监考楼层选择</h2>
-<label>姓名：<input type="text" id="teacherName" /></label>
 
-<h3>请选择两个楼层：</h3>
-<div id="floors"></div>
+<h2 id="titleDisplay">期中监考楼层选择</h2>
 
-<button id="submitBtn">提交</button>
+<div class="card">
+  <label>姓名：</label><br/>
+  <input type="text" id="teacherName" placeholder="请输入姓名" />
+</div>
 
-<h3>当前所有选择情况：</h3>
-<div id="publicBoard" class="selected-list"></div>
+<div class="card">
+  <h3 style="margin-top:0;">请选择两个楼层：</h3>
+  <div id="floors"></div>
+</div>
+
+<div class="card" style="text-align:center;">
+  <button id="submitBtn" class="btn">提交</button>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">当前所有选择情况：</h3>
+  <div id="publicBoard" class="selected-list"></div>
+</div>
+
+<div class="controller">
+  <button id="editTitleBtn" class="btn">修改投票标题</button>
+  <button id="resetBtn" class="btn btn-danger">重置投票</button>
+</div>
 
 <script>
 // =========================
-// 数据结构升级
+// 数据结构
 // =========================
-
-// 每个楼层最多可选 2 名老师
 const floorList = [
   "五教一楼", "五教二楼", "四教二楼", "四教三楼", "四教四楼", "合班楼"
 ];
 
-// 楼层记录： floor → [name1, name2]
 const assigned = {};  
 floorList.forEach(f => assigned[f] = []);
 
-// 老师记录： name → [floor1, floor2]
 const teacherChoices = {};
 
 
-// ========== 初始化 UI ==========
+// =========================
+// UI 初始化
+// =========================
 function init() {
   const floorDiv = document.getElementById('floors');
   floorDiv.innerHTML = '';
@@ -48,19 +137,20 @@ function init() {
     const id = 'f_' + floor;
 
     const div = document.createElement('div');
+    div.className = 'floor-item';
+
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.id = id;
     checkbox.value = floor;
 
-    // 如果该楼层已经被两个人选中，则禁用
     if (assigned[floor].length >= 2) {
       checkbox.disabled = true;
     }
 
     const label = document.createElement('label');
     label.setAttribute('for', id);
-    label.textContent = `${floor} (已选 ${assigned[floor].length}/2)`;
+    label.textContent = `${floor}（已选 ${assigned[floor].length}/2）`;
 
     if (assigned[floor].length >= 2) {
       label.classList.add('disabled');
@@ -75,16 +165,18 @@ function init() {
 }
 
 
-// ========== 公告栏 ==========
+// =========================
+// 公告栏更新
+// =========================
 function updatePublicBoard() {
   const board = document.getElementById('publicBoard');
 
   let html = "";
-  for (const floor of floorList) {
-    if (assigned[floor].length > 0) {
-      html += `${floor}：${assigned[floor].join("，")}<br/>`;
+  for (const f of floorList) {
+    if (assigned[f].length > 0) {
+      html += `${f}：${assigned[f].join("，")}<br/>`;
     } else {
-      html += `${floor}：<span style='color:gray'>无人选择</span><br/>`;
+      html += `${f}：<span style='color:gray'>无人选择</span><br/>`;
     }
   }
 
@@ -92,34 +184,37 @@ function updatePublicBoard() {
 }
 
 
-// ========== 提交处理 ==========
+// =========================
+// 提交逻辑
+// =========================
 document.getElementById('submitBtn').onclick = function() {
   const name = document.getElementById('teacherName').value.trim();
   if (!name) { alert("请输入姓名"); return; }
 
-  const choices = Array.from(document.querySelectorAll('#floors input:checked'))
-                      .map(c => c.value);
+  const choices = Array.from(
+      document.querySelectorAll('#floors input:checked')
+  ).map(c => c.value);
+
   if (choices.length !== 2) {
     alert("必须且只能选择两个楼层");
     return;
   }
 
-  // ========== 若该老师已经选过，需要撤销他之前的楼层占用 ==========
+  // 若该老师之前选过，需要撤销
   if (teacherChoices[name]) {
     teacherChoices[name].forEach(floor => {
       assigned[floor] = assigned[floor].filter(n => n !== name);
     });
   }
 
-  // 检查新选的楼层是否已满
+  // 检查是否已满
   for (const floor of choices) {
     if (assigned[floor].length >= 2) {
-      alert(`${floor} 名额已满（2人），请重新选择！`);
+      alert(`${floor} 名额已满，请重新选择！`);
       return;
     }
   }
 
-  // ========== 登记新的选择 ==========
   teacherChoices[name] = choices;
   choices.forEach(floor => assigned[floor].push(name));
 
@@ -128,8 +223,35 @@ document.getElementById('submitBtn').onclick = function() {
 };
 
 
-// 初始化界面
+// =========================
+// 修改投票标题
+// =========================
+document.getElementById('editTitleBtn').onclick = function() {
+  const newTitle = prompt("请输入新的投票标题：", document.getElementById('titleDisplay').textContent);
+  if (newTitle && newTitle.trim() !== "") {
+    document.getElementById('titleDisplay').textContent = newTitle;
+    document.title = newTitle;
+  }
+};
+
+
+// =========================
+// 重置投票
+// =========================
+document.getElementById('resetBtn').onclick = function() {
+  if (!confirm("确认要重置所有选择？本操作不可撤销。")) return;
+
+  floorList.forEach(f => assigned[f] = []);
+  for (const t in teacherChoices) delete teacherChoices[t];
+
+  init();
+  alert("投票已全部重置！");
+};
+
+
+// 初次加载
 init();
 </script>
 </body>
 </html>
+
