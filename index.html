@@ -124,18 +124,6 @@
 
 <div class="card">
   <h2 id="mainTitle">期中监考楼层选择</h2>
-  <button onclick="openModal()">修改投票标题</button>
-</div>
-
-<!-- Modal 弹窗 -->
-<div id="modalBg" class="modal-bg">
-  <div class="modal">
-    <h3>修改投票标题</h3>
-    <input type="text" id="newTitleInput" placeholder="请输入新的标题">
-    <br><br>
-    <button onclick="saveNewTitle()">保存</button>
-    <button class="danger" onclick="closeModal()">关闭</button>
-  </div>
 </div>
 
 <div class="card">
@@ -153,8 +141,23 @@
   <div id="publicBoard" class="selected-list"></div>
 </div>
 
+<!-- 设置操作 -->
 <div class="card">
+  <h3>设置</h3>
   <button class="danger" onclick="resetAll()">⚠ 重置全部投票</button>
+  <br>
+  <button onclick="openModal()">修改投票标题</button>
+</div>
+
+<!-- Modal 弹窗 -->
+<div id="modalBg" class="modal-bg">
+  <div class="modal">
+    <h3>修改投票标题</h3>
+    <input type="text" id="newTitleInput" placeholder="请输入新的标题">
+    <br><br>
+    <button onclick="saveNewTitle()">保存</button>
+    <button class="danger" onclick="closeModal()">关闭</button>
+  </div>
 </div>
 
 <!-- LeanCloud SDK -->
