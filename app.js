@@ -62,13 +62,14 @@ function init() {
 // =========================
 function getBeijingTimeString() {
   const now = new Date();
-  const beijing = new Date(now.getTime() + 8 * 60 * 60 * 1000 - now.getTimezoneOffset() * 60000);
-  const y = String(beijing.getUTCFullYear()).slice(2);
-  const m = String(beijing.getUTCMonth() + 1).padStart(2,'0');
-  const d = String(beijing.getUTCDate()).padStart(2,'0');
-  const hh = String(beijing.getUTCHours()).padStart(2,'0');
-  const mm = String(beijing.getUTCMinutes()).padStart(2,'0');
-  const ss = String(beijing.getUTCSeconds()).padStart(2,'0');
+  const beijingStr = now.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+  const date = new Date(beijingStr);
+  const y = String(date.getFullYear()).slice(2);
+  const m = String(date.getMonth() + 1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  const hh = String(date.getHours()).padStart(2,'0');
+  const mm = String(date.getMinutes()).padStart(2,'0');
+  const ss = String(date.getSeconds()).padStart(2,'0');
   return `${y}/${m}/${d},${hh}:${mm}:${ss}`;
 }
 
@@ -112,7 +113,6 @@ async function loadVotesFromCloud() {
     init();
   } catch (e) {
     console.error(e);
-    alert("加载云端数据失败！");
   }
 }
 
@@ -133,7 +133,6 @@ async function loadTitleFromCloud() {
     }
   } catch (e) {
     console.error(e);
-    alert("加载投票标题失败！");
   }
 }
 
@@ -157,10 +156,8 @@ async function saveNewTitle() {
     titleObj.set('title', newTitle);
     titleObj.setACL(new AV.ACL({ "*": { read: true, write: true } })); // 所有人可读写
     await titleObj.save();
-    alert("投票标题已保存到云端！");
   } catch (e) {
     console.error(e);
-    alert("保存投票标题失败！");
   }
 }
 
@@ -169,10 +166,10 @@ async function saveNewTitle() {
 // =========================
 document.getElementById('submitBtn').onclick = async function() {
   const name = document.getElementById('teacherName').value.trim();
-  if (!name) { alert("请输入姓名"); return; }
+  if (!name) return;
 
   const choices = Array.from(document.querySelectorAll('#floors input:checked')).map(c => c.value);
-  if (choices.length !== 2) { alert("必须选择 2 个楼层"); return; }
+  if (choices.length !== 2) return;
 
   // 撤销本地原选择
   if (teacherChoices[name]) {
@@ -183,10 +180,7 @@ document.getElementById('submitBtn').onclick = async function() {
 
   // 检查人数上限
   for (const f of choices) {
-    if (assigned[f].length >= 2) {
-      alert(`${f} 名额已满`);
-      return;
-    }
+    if (assigned[f].length >= 2) return;
   }
 
   // 登记本地数据
@@ -211,16 +205,12 @@ document.getElementById('submitBtn').onclick = async function() {
     voteObj.set('teacher', name);
     voteObj.set('choices', choices);
     voteObj.set('time', submitTime[name]);
-
-    // 设置 ACL：所有人可读写
     voteObj.setACL(new AV.ACL({ "*": { read: true, write: true } }));
 
     await voteObj.save();
-    alert("提交成功并保存到云端！");
     init();
   } catch (e) {
     console.error(e);
-    alert("保存到云端失败！");
   }
 };
 
@@ -234,8 +224,6 @@ function closeModal() { document.getElementById('modalBg').style.display = "none
 // 重置投票（同步云端）
 // =========================
 async function resetAll() {
-  if (!confirm("确定要重置所有投票吗？")) return;
-
   floorList.forEach(f => assigned[f] = []);
   for (const k in teacherChoices) delete teacherChoices[k];
   for (const k in submitTime) delete submitTime[k];
@@ -247,10 +235,8 @@ async function resetAll() {
       vote.setACL(new AV.ACL({ "*": { read: true, write: true } }));
       await vote.destroy();
     }
-    alert("已重置云端投票数据");
   } catch (e) {
     console.error(e);
-    alert("云端重置失败");
   }
 
   init();
