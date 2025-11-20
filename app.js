@@ -1,30 +1,18 @@
-// 引入 LeanCloud SDK
-// 注意：在 index.html 里已经通过 <script src="https://cdn1.lncld.net/static/js/3.14.1/av-min.js"></script> 引入了 SDK
-
-// 初始化 LeanCloud
+// =========================
+// LeanCloud 初始化
+// =========================
 AV.init({
   appId: 'C3dq2PBdG2bI1cD6WMtlXU6y-gzGzoHsz',
   appKey: 'gQCrkPGwovInr3mVcBVoF10s',
   serverURL: 'https://C3dq2PBdG2bI1cD6WMtlXU6y.lc-cn-n1-shared.com'
 });
 
-
-// =========================
-// 初始化 LeanCloud SDK（如果需要持久化）
-// =========================
-// AV.init({
-//   appId: '你的 AppID',
-//   appKey: '你的 AppKey',
-//   serverURL: 'https://你的AppID.lc-cn-n1-shared.com'
-// });
-
 // =========================
 // 楼层与数据初始化
 // =========================
 const floorList = [
   "五教一楼", "五教二楼",
-  "四教一楼",   // 新增
-  "四教二楼", "四教三楼", "四教四楼",
+  "四教一楼", "四教二楼", "四教三楼", "四教四楼",
   "合班楼"
 ];
 
@@ -37,7 +25,7 @@ const teacherChoices = {};
 const submitTime = {};
 
 // =========================
-// 初始化页面
+// 页面初始化函数
 // =========================
 function init() {
   const floorDiv = document.getElementById('floors');
@@ -70,7 +58,7 @@ function init() {
 }
 
 // =========================
-// 更新时间显示
+// 获取北京时间字符串
 // =========================
 function getBeijingTimeString() {
   const now = new Date();
@@ -85,7 +73,7 @@ function getBeijingTimeString() {
 }
 
 // =========================
-// 更新统计显示
+// 更新投票显示
 // =========================
 function updatePublicBoard() {
   const board = document.getElementById('publicBoard');
@@ -104,16 +92,41 @@ function updatePublicBoard() {
 }
 
 // =========================
-// 提交选择
+// 加载云端投票
 // =========================
-document.getElementById('submitBtn').onclick = function() {
+async function loadVotesFromCloud() {
+  try {
+    const query = new AV.Query('Vote');
+    const results = await query.find();
+
+    results.forEach(vote => {
+      const name = vote.get('teacher');
+      const choices = vote.get('choices');
+      const time = vote.get('time');
+
+      teacherChoices[name] = choices;
+      choices.forEach(f => assigned[f].push(name));
+      submitTime[name] = time;
+    });
+
+    init();
+  } catch (e) {
+    console.error(e);
+    alert("加载云端数据失败！");
+  }
+}
+
+// =========================
+// 提交选择（保存到本地和云端）
+// =========================
+document.getElementById('submitBtn').onclick = async function() {
   const name = document.getElementById('teacherName').value.trim();
   if (!name) { alert("请输入姓名"); return; }
 
   const choices = Array.from(document.querySelectorAll('#floors input:checked')).map(c => c.value);
   if (choices.length !== 2) { alert("必须选择 2 个楼层"); return; }
 
-  // 如果之前选过，撤销
+  // 撤销本地原选择
   if (teacherChoices[name]) {
     teacherChoices[name].forEach(f => {
       assigned[f] = assigned[f].filter(n => n !== name);
@@ -128,13 +141,36 @@ document.getElementById('submitBtn').onclick = function() {
     }
   }
 
-  // 登记选择
+  // 登记本地数据
   teacherChoices[name] = choices;
   choices.forEach(f => assigned[f].push(name));
   submitTime[name] = getBeijingTimeString();
 
-  alert("提交成功！");
-  init();
+  // 保存到 LeanCloud
+  try {
+    const Vote = AV.Object.extend('Vote');
+    const query = new AV.Query('Vote');
+    query.equalTo('teacher', name);
+    const results = await query.find();
+
+    let voteObj;
+    if (results.length > 0) {
+      voteObj = results[0]; // 更新已有记录
+    } else {
+      voteObj = new Vote(); // 新建记录
+    }
+
+    voteObj.set('teacher', name);
+    voteObj.set('choices', choices);
+    voteObj.set('time', submitTime[name]);
+    await voteObj.save();
+
+    alert("提交成功并保存到云端！");
+    init();
+  } catch (e) {
+    console.error(e);
+    alert("保存到云端失败！");
+  }
 };
 
 // =========================
@@ -149,15 +185,31 @@ function saveNewTitle() {
 }
 
 // =========================
-// 重置投票
+// 重置投票（同步云端）
 // =========================
-function resetAll() {
+async function resetAll() {
   if (!confirm("确定要重置所有投票吗？")) return;
+
   floorList.forEach(f => assigned[f] = []);
   for (const k in teacherChoices) delete teacherChoices[k];
   for (const k in submitTime) delete submitTime[k];
+
+  try {
+    const query = new AV.Query('Vote');
+    const results = await query.find();
+    for (const vote of results) {
+      await vote.destroy();
+    }
+    alert("已重置云端投票数据");
+  } catch (e) {
+    console.error(e);
+    alert("云端重置失败");
+  }
+
   init();
 }
 
-// 初始化
-init();
+// =========================
+// 页面加载时拉取云端数据
+// =========================
+loadVotesFromCloud();
