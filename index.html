@@ -2,15 +2,15 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+<meta name="viewport" content="width=device-width, initial-scale=1.2, maximum-scale=2.0">
 <title>高一学部守楼层</title>
 
 <style>
   body {
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    margin: 15px;
+    margin: 10px;
     background: #f7f7f7;
-    font-size: 16px;
+    font-size: 20px;
   }
 
   h2, h3 {
@@ -19,22 +19,22 @@
 
   .card {
     background: #ffffff;
-    padding: 15px;
+    padding: 12px 16px;
     border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    margin-bottom: 15px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+    margin-bottom: 12px;
   }
 
   input[type="text"] {
-    font-size: 16px;
-    padding: 5px 8px;
-    border-radius: 5px;
+    font-size: 20px;
+    padding: 6px 10px;
+    border-radius: 6px;
     border: 1px solid #ccc;
-    width: 75%;
+    width: 80%;
   }
 
   button {
-    font-size: 16px;
+    font-size: 20px;
     padding: 8px 12px;
     margin: 8px 0;
     border: none;
@@ -62,7 +62,7 @@
 
   .selected-list {
     margin-top: 8px;
-    line-height: 1.4;
+    line-height: 1.5;
   }
 
   /* Modal 弹窗 */
@@ -79,17 +79,44 @@
 
   .modal {
     background: #fff;
-    padding: 15px;
-    width: 85%;
+    padding: 16px;
+    width: 80%;
     border-radius: 10px;
     text-align: center;
   }
 
   .modal input {
     width: 90%;
-    font-size: 16px;
-    padding: 6px;
-    border-radius: 5px;
+    font-size: 20px;
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+
+  /* 手机端适配 */
+  @media (max-width: 480px) {
+    body {
+      font-size: 18px;
+      margin: 8px;
+    }
+
+    .card {
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      font-size: 18px;
+      padding: 6px 10px;
+    }
+
+    .modal {
+      padding: 12px;
+    }
+
+    .modal input {
+      font-size: 18px;
+      padding: 5px 6px;
+    }
   }
 </style>
 </head>
