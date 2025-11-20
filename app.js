@@ -117,6 +117,52 @@ async function loadVotesFromCloud() {
 }
 
 // =========================
+// 保存/更新投票标题到云端
+// =========================
+async function loadTitleFromCloud() {
+  try {
+    const query = new AV.Query('VoteTitle');
+    query.limit(1);
+    const results = await query.find();
+    if (results.length > 0) {
+      const titleObj = results[0];
+      const title = titleObj.get('title');
+      document.getElementById('mainTitle').textContent = title;
+      window.voteTitleObj = titleObj; // 缓存对象方便更新
+    }
+  } catch (e) {
+    console.error(e);
+    alert("加载投票标题失败！");
+  }
+}
+
+async function saveNewTitle() {
+  const newTitle = document.getElementById('newTitleInput').value.trim();
+  if (!newTitle) return;
+
+  document.getElementById('mainTitle').textContent = newTitle;
+  closeModal();
+
+  try {
+    let titleObj;
+    if (window.voteTitleObj) {
+      titleObj = window.voteTitleObj;
+    } else {
+      const VoteTitle = AV.Object.extend('VoteTitle');
+      titleObj = new VoteTitle();
+      window.voteTitleObj = titleObj;
+    }
+    titleObj.set('title', newTitle);
+    titleObj.setACL(new AV.ACL({ "*": { read: true, write: true } })); // 所有人可读写
+    await titleObj.save();
+    alert("投票标题已保存到云端！");
+  } catch (e) {
+    console.error(e);
+    alert("保存投票标题失败！");
+  }
+}
+
+// =========================
 // 提交选择（保存到本地和云端）
 // =========================
 document.getElementById('submitBtn').onclick = async function() {
@@ -164,11 +210,10 @@ document.getElementById('submitBtn').onclick = async function() {
     voteObj.set('choices', choices);
     voteObj.set('time', submitTime[name]);
 
-    // ✅ 设置 ACL：所有人可读可写
+    // 设置 ACL：所有人可读写
     voteObj.setACL(new AV.ACL({ "*": { read: true, write: true } }));
 
     await voteObj.save();
-
     alert("提交成功并保存到云端！");
     init();
   } catch (e) {
@@ -182,11 +227,6 @@ document.getElementById('submitBtn').onclick = async function() {
 // =========================
 function openModal() { document.getElementById('modalBg').style.display = "flex"; }
 function closeModal() { document.getElementById('modalBg').style.display = "none"; }
-function saveNewTitle() {
-  const v = document.getElementById('newTitleInput').value.trim();
-  if (v) document.getElementById('mainTitle').textContent = v;
-  closeModal();
-}
 
 // =========================
 // 重置投票（同步云端）
@@ -202,6 +242,8 @@ async function resetAll() {
     const query = new AV.Query('Vote');
     const results = await query.find();
     for (const vote of results) {
+      // 所有人可写 ACL，避免 403
+      vote.setACL(new AV.ACL({ "*": { read: true, write: true } }));
       await vote.destroy();
     }
     alert("已重置云端投票数据");
@@ -214,6 +256,9 @@ async function resetAll() {
 }
 
 // =========================
-// 页面加载时拉取云端数据
+// 页面加载时拉取云端数据和标题
 // =========================
-loadVotesFromCloud();
+window.addEventListener('DOMContentLoaded', () => {
+  loadVotesFromCloud();
+  loadTitleFromCloud();
+});
