@@ -2,256 +2,253 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<title id="pageTitle">期中监考楼层选择</title>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.2, maximum-scale=2.0">
+<title>高一学部守楼层</title>
 
 <style>
   body {
-    font-family: "微软雅黑", sans-serif;
-    margin: 12px;
-    font-size: 20px;        /* 手机端更大字体 */
-    background: #f5f7fa;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    margin: 20px;
+    background: #f7f7f7;
+    font-size: 20px;
   }
 
-  h2 {
-    font-size: 26px;
-    text-align: center;
+  h2, h3 {
     margin-bottom: 10px;
   }
 
   .card {
-    background: white;
-    padding: 16px;
-    border-radius: 10px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    margin-bottom: 18px;
-  }
-
-  label {
-    font-size: 20px;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
   }
 
   input[type="text"] {
-    width: 90%;
-    padding: 8px;
     font-size: 20px;
-    margin-top: 6px;
-    border-radius: 8px;
-    border: 1px solid #bbb;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    width: 80%;
   }
 
-  .floor-item {
-    padding: 8px 0;
+  button {
+    font-size: 20px;
+    padding: 10px 16px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    background: #4e8cff;
+    color: white;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #3b6ed6;
+  }
+
+  .danger {
+    background: #ff6b6b;
+  }
+
+  .danger:hover {
+    background: #e65555;
   }
 
   .disabled {
     color: gray;
   }
 
-  .btn {
-    background: #2d8cf0;
-    border: none;
-    padding: 12px 20px;
-    color: white;
-    font-size: 20px;
-    border-radius: 8px;
-    margin-right: 10px;
-    cursor: pointer;
-  }
-
-  .btn:hover {
-    background: #1a73d9;
-  }
-
-  .btn-danger {
-    background: #d9534f;
-  }
-  .btn-danger:hover {
-    background: #b94440;
-  }
-
   .selected-list {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 20px;
+    margin-top: 10px;
+    line-height: 1.6;
   }
 
-  .controller {
-    margin-top: 20px;
+  /* -------- modal 弹窗 -------- */
+  .modal-bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal {
+    background: #fff;
+    padding: 20px;
+    width: 80%;
+    border-radius: 12px;
     text-align: center;
   }
+
+  .modal input {
+    width: 90%;
+    font-size: 20px;
+    padding: 8px;
+    border-radius: 6px;
+  }
+
 </style>
 </head>
 <body>
 
-<h2 id="titleDisplay">期中监考楼层选择</h2>
-
 <div class="card">
-  <label>姓名：</label><br/>
-  <input type="text" id="teacherName" placeholder="请输入姓名" />
+  <h2 id="mainTitle">期中监考楼层选择</h2>
+  <button onclick="openModal()">修改投票标题</button>
 </div>
 
 <div class="card">
-  <h3 style="margin-top:0;">请选择两个楼层：</h3>
+  <label>姓名：<br><input type="text" id="teacherName" /></label>
+</div>
+
+<div class="card">
+  <h3>请选择两个楼层：</h3>
   <div id="floors"></div>
-</div>
-
-<div class="card" style="text-align:center;">
-  <button id="submitBtn" class="btn">提交</button>
+  <button id="submitBtn">提交选择</button>
 </div>
 
 <div class="card">
-  <h3 style="margin-top:0;">当前所有选择情况：</h3>
+  <h3>当前所有选择情况：</h3>
   <div id="publicBoard" class="selected-list"></div>
 </div>
 
-<div class="controller">
-  <button id="editTitleBtn" class="btn">修改投票标题</button>
-  <button id="resetBtn" class="btn btn-danger">重置投票</button>
+<div class="card">
+  <button class="danger" onclick="resetAll()">⚠ 重置全部投票</button>
+</div>
+
+<!-- ========== Modal 弹窗 ========== -->
+<div id="modalBg" class="modal-bg">
+  <div class="modal">
+    <h3>修改投票标题</h3>
+    <input type="text" id="newTitleInput" placeholder="请输入新的标题">
+    <br><br>
+    <button onclick="saveNewTitle()">保存</button>
+    <button class="danger" onclick="closeModal()">关闭</button>
+  </div>
 </div>
 
 <script>
-// =========================
-// 数据结构
-// =========================
+// 楼层数据
 const floorList = [
-  "五教一楼", "五教二楼", "四教二楼", "四教三楼", "四教四楼", "合班楼"
+  "五教一楼", "五教二楼", "四教二楼",
+  "四教三楼", "四教四楼", "合班楼"
 ];
 
-const assigned = {};  
+// 记录
+const assigned = {};
 floorList.forEach(f => assigned[f] = []);
-
 const teacherChoices = {};
 
-
-// =========================
-// UI 初始化
-// =========================
 function init() {
   const floorDiv = document.getElementById('floors');
-  floorDiv.innerHTML = '';
+  floorDiv.innerHTML = "";
 
   floorList.forEach(floor => {
-    const id = 'f_' + floor;
+    const id = "f_" + floor;
 
-    const div = document.createElement('div');
-    div.className = 'floor-item';
+    const wrapper = document.createElement("div");
+    wrapper.style.margin = "8px 0";
 
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.id = id;
-    checkbox.value = floor;
-
-    if (assigned[floor].length >= 2) {
-      checkbox.disabled = true;
-    }
-
-    const label = document.createElement('label');
-    label.setAttribute('for', id);
-    label.textContent = `${floor}（已选 ${assigned[floor].length}/2）`;
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.id = id;
+    check.value = floor;
 
     if (assigned[floor].length >= 2) {
-      label.classList.add('disabled');
+      check.disabled = true;
     }
 
-    div.appendChild(checkbox);
-    div.appendChild(label);
-    floorDiv.appendChild(div);
+    const label = document.createElement("label");
+    label.setAttribute("for", id);
+    label.textContent = `${floor} (已选 ${assigned[floor].length}/2)`;
+
+    if (assigned[floor].length >= 2) {
+      label.classList.add("disabled");
+    }
+
+    wrapper.appendChild(check);
+    wrapper.appendChild(label);
+    floorDiv.appendChild(wrapper);
   });
 
   updatePublicBoard();
 }
 
-
-// =========================
-// 公告栏更新
-// =========================
 function updatePublicBoard() {
   const board = document.getElementById('publicBoard');
-
   let html = "";
-  for (const f of floorList) {
-    if (assigned[f].length > 0) {
-      html += `${f}：${assigned[f].join("，")}<br/>`;
+
+  floorList.forEach(f => {
+    if (assigned[f].length === 0) {
+      html += `${f}：<span style="color:gray">无人选择</span><br>`;
     } else {
-      html += `${f}：<span style='color:gray'>无人选择</span><br/>`;
+      html += `${f}：${assigned[f].join("，")}<br>`;
     }
-  }
+  });
 
   board.innerHTML = html;
 }
 
-
-// =========================
-// 提交逻辑
-// =========================
 document.getElementById('submitBtn').onclick = function() {
   const name = document.getElementById('teacherName').value.trim();
   if (!name) { alert("请输入姓名"); return; }
 
-  const choices = Array.from(
-      document.querySelectorAll('#floors input:checked')
-  ).map(c => c.value);
+  const choices = Array.from(document.querySelectorAll('#floors input:checked')).map(c => c.value);
 
   if (choices.length !== 2) {
-    alert("必须且只能选择两个楼层");
+    alert("必须选择 2 个楼层");
     return;
   }
 
-  // 若该老师之前选过，需要撤销
   if (teacherChoices[name]) {
-    teacherChoices[name].forEach(floor => {
-      assigned[floor] = assigned[floor].filter(n => n !== name);
+    teacherChoices[name].forEach(f => {
+      assigned[f] = assigned[f].filter(n => n !== name);
     });
   }
 
-  // 检查是否已满
-  for (const floor of choices) {
-    if (assigned[floor].length >= 2) {
-      alert(`${floor} 名额已满，请重新选择！`);
+  for (const f of choices) {
+    if (assigned[f].length >= 2) {
+      alert(`${f} 名额已满`);
       return;
     }
   }
 
   teacherChoices[name] = choices;
-  choices.forEach(floor => assigned[floor].push(name));
+  choices.forEach(f => assigned[f].push(name));
 
   alert("提交成功！");
   init();
 };
 
+// ------------- Modal 功能 -------------
+function openModal() {
+  document.getElementById('modalBg').style.display = "flex";
+}
 
-// =========================
-// 修改投票标题
-// =========================
-document.getElementById('editTitleBtn').onclick = function() {
-  const newTitle = prompt("请输入新的投票标题：", document.getElementById('titleDisplay').textContent);
-  if (newTitle && newTitle.trim() !== "") {
-    document.getElementById('titleDisplay').textContent = newTitle;
-    document.title = newTitle;
+function closeModal() {
+  document.getElementById('modalBg').style.display = "none";
+}
+
+function saveNewTitle() {
+  const v = document.getElementById('newTitleInput').value.trim();
+  if (v) {
+    document.getElementById('mainTitle').textContent = v;
   }
-};
+  closeModal();
+}
 
-
-// =========================
-// 重置投票
-// =========================
-document.getElementById('resetBtn').onclick = function() {
-  if (!confirm("确认要重置所有选择？本操作不可撤销。")) return;
-
+// ------------- 重置 -------------
+function resetAll() {
+  if (!confirm("确定要重置所有投票吗？")) return;
   floorList.forEach(f => assigned[f] = []);
-  for (const t in teacherChoices) delete teacherChoices[t];
-
+  for (const k in teacherChoices) delete teacherChoices[k];
   init();
-  alert("投票已全部重置！");
-};
+}
 
-
-// 初次加载
 init();
 </script>
 </body>
 </html>
-
