@@ -163,6 +163,10 @@ document.getElementById('submitBtn').onclick = async function() {
     voteObj.set('teacher', name);
     voteObj.set('choices', choices);
     voteObj.set('time', submitTime[name]);
+
+    // ✅ 设置 ACL：所有人可读可写
+    voteObj.setACL(new AV.ACL({ "*": { read: true, write: true } }));
+
     await voteObj.save();
 
     alert("提交成功并保存到云端！");
