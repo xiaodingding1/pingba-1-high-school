@@ -1,3 +1,8 @@
+// 放在 app.js 开头
+if (!sessionStorage.getItem('reloaded')) {
+  sessionStorage.setItem('reloaded', 'true');
+  location.reload(true);
+}
 // =========================
 // LeanCloud 初始化
 // =========================
