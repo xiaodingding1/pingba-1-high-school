@@ -33,9 +33,6 @@
     width: 80%;
   }
 
-  /* ------------------------------------------
-     高质感按钮：凹陷按压动画 + 阴影
-  -------------------------------------------*/
   button {
     font-size: 20px;
     padding: 10px 16px;
@@ -45,25 +42,22 @@
     background: linear-gradient(180deg, #4d8dff, #2669ff);
     color: white;
     cursor: pointer;
-    transition: all 0.15s ease;      /* 按压动画 */
+    transition: all 0.15s ease;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     display: inline-block;
   }
 
-  /* 悬停轻微亮起 */
   button:hover {
     background: linear-gradient(180deg, #5a97ff, #3373ff);
     box-shadow: 0 5px 12px rgba(0,0,0,0.18);
   }
 
-  /* 按下（凹陷效果） */
   button:active {
-    transform: scale(0.96);    /* 缩小一点，实现按压感 */
+    transform: scale(0.96);
     box-shadow: 0 2px 6px rgba(0,0,0,0.12);
     background: linear-gradient(180deg, #3f7df0, #1f5be0);
   }
 
-  /* 危险按钮 */
   .danger {
     background: linear-gradient(180deg, #ff6b6b, #e34b4b);
   }
@@ -86,7 +80,14 @@
     line-height: 1.5;
   }
 
-  /* Modal 弹窗 */
+  /* ------------------------------------------
+     页面加载前隐藏全部内容（解决闪烁）
+  -------------------------------------------*/
+  .hidden-before-load {
+    visibility: hidden;
+  }
+
+  /* Modal */
   .modal-bg {
     position: fixed;
     top: 0; left: 0;
@@ -141,7 +142,9 @@
   }
 </style>
 </head>
-<body>
+
+<!-- ⭐⭐⭐ 关键修改：加入隐藏类，避免加载前显示旧标题 ⭐⭐⭐ -->
+<body class="hidden-before-load">
 
 <div class="card">
   <h2 id="mainTitle">期中监考楼层选择</h2>
@@ -162,7 +165,6 @@
   <div id="publicBoard" class="selected-list"></div>
 </div>
 
-<!-- 设置操作 -->
 <div class="card">
   <h3>设置</h3>
   <button class="danger" onclick="resetAll()">⚠ 重置全部投票</button>
@@ -170,7 +172,6 @@
   <button id="viewDetailsBtn">查看投票详细信息</button>
 </div>
 
-<!-- Modal 弹窗 -->
 <div id="modalBg" class="modal-bg">
   <div class="modal">
     <h3>修改投票标题</h3>
@@ -181,10 +182,20 @@
   </div>
 </div>
 
-<!-- LeanCloud SDK -->
 <script src="libs/av-min.js"></script>
-<!-- 自定义逻辑 -->
 <script src="app.js"></script>
+
+<!-- ⭐⭐⭐ 关键 JS：加载完成后再显示页面 ⭐⭐⭐ -->
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  Promise.all([
+    loadVotesFromCloud(),
+    loadTitleFromCloud()
+  ]).then(() => {
+    document.body.classList.remove('hidden-before-load');
+  });
+});
+</script>
 
 </body>
 </html>
