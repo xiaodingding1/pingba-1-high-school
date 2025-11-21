@@ -16,6 +16,37 @@ AV.init({
 });
 
 // =========================
+// 全局密码对象
+// =========================
+let globalResetPassword = null;   // 存储云端密码对象
+
+// =========================
+// 从云端加载密码
+// =========================
+async function loadPasswordFromCloud() {
+  try {
+    const q = new AV.Query('VotePassword');
+    q.equalTo('key', 'resetPwd');
+    q.limit(1);
+
+    const r = await q.find();
+    if (r.length > 0) {
+      globalResetPassword = r[0];
+    } else {
+      // 自动创建一条默认密码记录（首次使用）
+      const VotePassword = AV.Object.extend('VotePassword');
+      const obj = new VotePassword();
+      obj.set('key', 'resetPwd');
+      obj.set('pwd', '123456');  // 默认密码（你可以修改）
+      obj.setACL(new AV.ACL({ "*": { read: true, write: true }}));
+      await obj.save();
+
+      globalResetPassword = obj;
+    }
+  } catch (e) { console.error(e); }
+}
+
+// =========================
 // 楼层与数据初始化
 // =========================
 const floorList = ["五教一楼","五教二楼","四教一楼","四教二楼","四教三楼","四教四楼","合班楼"];
@@ -88,7 +119,7 @@ async function loadVotesFromCloud() {
       const t = v.get('time');
       teacherChoices[n] = c;
       c.forEach(f => assigned[f].push(n));
-      submitTime[n] = t; 
+      submitTime[n] = t;
     });
     init();
   } catch (e) { console.error(e); }
@@ -181,30 +212,30 @@ function openModal() { document.getElementById('modalBg').style.display = "flex"
 function closeModal() { document.getElementById('modalBg').style.display = "none"; }
 
 // =========================
-// 重置全部投票（加入密码验证）
+// 重置全部投票（带密码）
 // =========================
 async function resetAll() {
 
-  // === 首先输入密码 ===
-  const pwd = prompt("请输入重置密码：");
-  const REAL_PASSWORD = "2025reset";   // ←← 在这里改密码
-
-  if (pwd === null) return;  // 用户取消
-  if (pwd !== REAL_PASSWORD) {
-    alert("密码错误，无法重置！");
+  if (!globalResetPassword) {
+    alert("密码尚未加载，请稍后重试");
     return;
   }
 
-  // === 再次确认提示 ===
+  const pwd = prompt("请输入重置密码：");
+  if (pwd === null) return;
+
+  if (pwd !== globalResetPassword.get("pwd")) {
+    alert("密码错误！");
+    return;
+  }
+
   const ok = confirm("⚠ 确定要重置所有投票吗？此操作不可恢复！");
   if (!ok) return;
 
-  // 本地清空
   floorList.forEach(f => assigned[f] = []);
   Object.keys(teacherChoices).forEach(k => delete teacherChoices[k]);
   Object.keys(submitTime).forEach(k => delete submitTime[k]);
 
-  // 云端清空
   try {
     const results = await new AV.Query('Vote').find();
     for (const v of results) {
@@ -216,14 +247,52 @@ async function resetAll() {
   init();
 }
 
+// =========================
+// 修改密码功能
+// =========================
+document.getElementById("changePwdBtn").onclick = async function() {
+  if (!globalResetPassword) {
+    alert("密码尚未加载，请稍后重试");
+    return;
+  }
+
+  const oldPwd = prompt("请输入旧密码：");
+  if (oldPwd === null) return;
+
+  if (oldPwd !== globalResetPassword.get("pwd")) {
+    alert("旧密码错误！");
+    return;
+  }
+
+  const newPwd = prompt("请输入新密码：");
+  if (!newPwd) return;
+
+  try {
+    globalResetPassword.set("pwd", newPwd);
+    globalResetPassword.setACL(new AV.ACL({ "*": { read:true, write:true }}));
+    await globalResetPassword.save();
+    alert("密码已成功修改！");
+  } catch (e) {
+    console.error(e);
+    alert("保存密码时出错");
+  }
+};
+
+// =========================
+// 跳转详情页
+// =========================
 document.getElementById("viewDetailsBtn").onclick = function() {
   window.location.href = "details.html";
 };
 
+// =========================
+// 页面加载时初始化
+// =========================
 window.addEventListener('DOMContentLoaded', () => {
   Promise.all([
     loadVotesFromCloud(),
-    loadTitleFromCloud()
+    loadTitleFromCloud(),
+    loadPasswordFromCloud()
   ]).then(() => {
     document.body.classList.remove('hidden-before-load');
   });
