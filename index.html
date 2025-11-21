@@ -7,23 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>高一学部守楼层</title>
-<style>
-body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;margin:10px;background:#f7f7f7;font-size:20px}
-h2,h3{margin-bottom:8px}
-.card{background:#fff;padding:12px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:14px}
-input[type=text],input[type=password]{font-size:20px;padding:6px 10px;border-radius:8px;border:1px solid #ccc;width:80%}
-button{font-size:20px;padding:10px 16px;margin:10px 0;border:none;border-radius:10px;background:linear-gradient(180deg,#4d8dff,#2669ff);color:#fff;cursor:pointer;transition:all 0.15s ease;box-shadow:0 4px 10px rgba(0,0,0,0.15)}
-button:hover{background:linear-gradient(180deg,#5a97ff,#3373ff);box-shadow:0 5px 12px rgba(0,0,0,0.18)}
-button:active{transform:scale(0.96);box-shadow:0 2px 6px rgba(0,0,0,0.12);background:linear-gradient(180deg,#3f7df0,#1f5be0)}
-.danger{background:linear-gradient(180deg,#ff6b6b,#e34b4b)}
-.danger:hover{background:linear-gradient(180deg,#ff7d7d,#f05b5b)}
-.danger:active{transform:scale(0.96);background:linear-gradient(180deg,#e95a5a,#cf3f3f)}
-.selected-list{margin-top:8px;line-height:1.5}
-.hidden-before-load{visibility:hidden}
-.modal-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);display:none;justify-content:center;align-items:center;z-index:999}
-.modal{background:#fff;padding:18px;width:80%;border-radius:12px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
-.modal input{width:90%;font-size:20px;padding:8px 10px;border-radius:8px;border:1px solid #ccc}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body class="hidden-before-load">
 
@@ -61,7 +45,7 @@ button:active{transform:scale(0.96);box-shadow:0 2px 6px rgba(0,0,0,0.12);backgr
   </div>
 </div>
 
-<!-- 新增：重置投票 modal -->
+<!-- 重置投票 modal -->
 <div id="resetPwdModal" class="modal-bg">
   <div class="modal">
     <h3>请输入重置密码</h3>
@@ -76,7 +60,7 @@ button:active{transform:scale(0.96);box-shadow:0 2px 6px rgba(0,0,0,0.12);backgr
 <script>
 window.addEventListener('DOMContentLoaded', () => {
   const resetBtn = document.getElementById('resetBtn');
-  if (resetBtn) resetBtn.addEventListener('click', openResetModal); // 只打开 modal
+  if (resetBtn) resetBtn.addEventListener('click', openResetModal);
 
   const openTitleBtn = document.getElementById('openTitleBtn');
   if (openTitleBtn) openTitleBtn.addEventListener('click', openModal);
@@ -96,7 +80,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const changePwdBtn = document.getElementById('changePwdBtn');
   if (changePwdBtn) changePwdBtn.addEventListener('click', changePwdViaPrompt);
 
-  // 重置投票 modal 绑定事件
   const resetCloseBtn = document.getElementById('closeResetBtn');
   if (resetCloseBtn) resetCloseBtn.addEventListener('click', closeResetModal);
 
