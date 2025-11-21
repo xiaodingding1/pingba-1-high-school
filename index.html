@@ -25,7 +25,7 @@
     margin-bottom: 14px;
   }
 
-  input[type="text"] {
+  input[type="text"], input[type="password"] {
     font-size: 20px;
     padding: 6px 10px;
     border-radius: 8px;
@@ -80,11 +80,11 @@
     line-height: 1.5;
   }
 
-  /* 页面加载前隐藏内容 */
   .hidden-before-load {
     visibility: hidden;
   }
 
+  /* Modal 背景 */
   .modal-bg {
     position: fixed;
     top: 0; left: 0;
@@ -115,7 +115,6 @@
 </style>
 </head>
 
-<!-- 这里加上了 hidden-before-load -->
 <body class="hidden-before-load">
 
 <div class="card">
@@ -142,8 +141,10 @@
   <button class="danger" onclick="resetAll()">⚠ 重置全部投票</button>
   <button onclick="openModal()">修改投票标题</button>
   <button id="viewDetailsBtn">查看投票详细信息</button>
+  <button onclick="openPasswordModal()">修改密码</button>
 </div>
 
+<!-- 修改标题 Modal -->
 <div id="modalBg" class="modal-bg">
   <div class="modal">
     <h3>修改投票标题</h3>
@@ -151,6 +152,21 @@
     <br><br>
     <button onclick="saveNewTitle()">保存</button>
     <button class="danger" onclick="closeModal()">关闭</button>
+  </div>
+</div>
+
+<!-- 修改密码 Modal -->
+<div id="pwdModalBg" class="modal-bg">
+  <div class="modal">
+    <h3>修改密码</h3>
+
+    <input id="oldPwdInput" type="password" placeholder="请输入原密码">
+    <br><br>
+    <input id="newPwdInput" type="password" placeholder="请输入新密码">
+    <br><br>
+
+    <button onclick="changePassword()">确认修改</button>
+    <button class="danger" onclick="closePasswordModal()">关闭</button>
   </div>
 </div>
 
