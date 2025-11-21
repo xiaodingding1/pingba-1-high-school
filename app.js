@@ -112,7 +112,7 @@ async function submitChoiceHandler(){
 function openModal(){const el=document.getElementById('modalBg');if(el)el.style.display='flex';}
 function closeModal(){const el=document.getElementById('modalBg');if(el)el.style.display='none';}
 
-// 新增重置投票 modal 控制
+// ===================== 新增重置投票 modal 控制 =====================
 function openResetModal(){
     const el=document.getElementById('resetPwdModal');
     if(el){ el.style.display='flex'; document.getElementById('resetPwdInput').value=''; }
@@ -124,6 +124,7 @@ function closeResetModal(){
 async function confirmResetAll(){
     const pwdInput=document.getElementById('resetPwdInput'); if(!pwdInput) return;
     const pwd=pwdInput.value.trim();
+    if(!globalResetPassword){ alert("密码尚未加载，请稍后重试"); return; }
     if(pwd!==globalResetPassword.get("pwd")) { alert("密码错误！"); return; }
     if(!confirm("⚠ 确定要重置所有投票吗？此操作不可恢复！")) return;
     floorList.forEach(f=>assigned[f]=[]);
@@ -137,6 +138,7 @@ async function confirmResetAll(){
     closeResetModal();
 }
 
+// ===================== 修改密码 =====================
 async function changePwdViaPrompt(){
     if(!globalResetPassword){alert("密码尚未加载，请稍后重试");return;}
     const oldPwd=prompt("请输入旧密码：");if(oldPwd===null)return;if(oldPwd!==globalResetPassword.get("pwd")){alert("旧密码错误！");return;}
@@ -146,18 +148,21 @@ async function changePwdViaPrompt(){
 
 function goToDetails(){window.location.href="details.html";}
 
+// ===================== DOMContentLoaded 绑定 =====================
 window.addEventListener('DOMContentLoaded',()=>{
     Promise.all([loadVotesFromCloud(),loadTitleFromCloud(),loadPasswordFromCloud()]).then(()=>{
         if(document.body) document.body.classList.remove('hidden-before-load');
+
         const submitBtn=document.getElementById('submitBtn');if(submitBtn)submitBtn.addEventListener('click',submitChoiceHandler);
         const viewBtn=document.getElementById('viewDetailsBtn');if(viewBtn)viewBtn.addEventListener('click',goToDetails);
         const changePwdBtn=document.getElementById('changePwdBtn');if(changePwdBtn)changePwdBtn.addEventListener('click',changePwdViaPrompt);
-        const openTitleBtn=document.querySelector('button[onclick="openModal()"]');if(openTitleBtn)openTitleBtn.addEventListener('click',openModal);
-        const modalCloseBtn=document.querySelector('#modalBg .danger');if(modalCloseBtn)modalCloseBtn.addEventListener('click',closeModal);
-        const saveTitleBtn=document.querySelector('#modalBg button:not(.danger)');if(saveTitleBtn)saveTitleBtn.addEventListener('click',saveNewTitle);
 
-        // 绑定重置投票 modal 事件
-        const resetBtn = document.querySelector('.danger[onclick="resetAll()"]');
+        const openTitleBtn=document.getElementById('openTitleBtn');if(openTitleBtn)openTitleBtn.addEventListener('click',openModal);
+        const modalCloseBtn=document.getElementById('closeTitleBtn');if(modalCloseBtn)modalCloseBtn.addEventListener('click',closeModal);
+        const saveTitleBtn=document.getElementById('saveTitleBtn');if(saveTitleBtn)saveTitleBtn.addEventListener('click',saveNewTitle);
+
+        // 重置投票 modal 事件绑定
+        const resetBtn = document.getElementById('resetBtn');
         if(resetBtn) resetBtn.addEventListener('click', openResetModal);
         const resetCloseBtn = document.getElementById('closeResetBtn');
         if(resetCloseBtn) resetCloseBtn.addEventListener('click', closeResetModal);
