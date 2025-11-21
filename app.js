@@ -88,7 +88,7 @@ async function loadVotesFromCloud() {
       const t = v.get('time');
       teacherChoices[n] = c;
       c.forEach(f => assigned[f].push(n));
-      submitTime[n] = t; // 时间仍然保存，只是不在主页面显示
+      submitTime[n] = t; 
     });
     init();
   } catch (e) { console.error(e); }
@@ -181,16 +181,30 @@ function openModal() { document.getElementById('modalBg').style.display = "flex"
 function closeModal() { document.getElementById('modalBg').style.display = "none"; }
 
 // =========================
-// 重置全部投票（增加确认）
+// 重置全部投票（加入密码验证）
 // =========================
 async function resetAll() {
+
+  // === 首先输入密码 ===
+  const pwd = prompt("请输入重置密码：");
+  const REAL_PASSWORD = "2025reset";   // ←← 在这里改密码
+
+  if (pwd === null) return;  // 用户取消
+  if (pwd !== REAL_PASSWORD) {
+    alert("密码错误，无法重置！");
+    return;
+  }
+
+  // === 再次确认提示 ===
   const ok = confirm("⚠ 确定要重置所有投票吗？此操作不可恢复！");
   if (!ok) return;
 
+  // 本地清空
   floorList.forEach(f => assigned[f] = []);
   Object.keys(teacherChoices).forEach(k => delete teacherChoices[k]);
   Object.keys(submitTime).forEach(k => delete submitTime[k]);
 
+  // 云端清空
   try {
     const results = await new AV.Query('Vote').find();
     for (const v of results) {
@@ -214,4 +228,3 @@ window.addEventListener('DOMContentLoaded', () => {
     document.body.classList.remove('hidden-before-load');
   });
 });
-
