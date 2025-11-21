@@ -34,8 +34,8 @@ button:active{transform:scale(0.96);box-shadow:0 2px 6px rgba(0,0,0,0.12);backgr
 
 <div class="card">
   <h3>设置</h3>
-  <button class="danger" onclick="resetAll()">⚠ 重置全部投票</button>
-  <button onclick="openModal()">修改投票标题</button>
+  <button class="danger" id="resetBtn">⚠ 重置全部投票</button>
+  <button id="openTitleBtn">修改投票标题</button>
   <button id="viewDetailsBtn">查看投票详细信息</button>
   <button id="changePwdBtn">修改密码</button>
 </div>
@@ -44,8 +44,8 @@ button:active{transform:scale(0.96);box-shadow:0 2px 6px rgba(0,0,0,0.12);backgr
   <div class="modal">
     <h3>修改投票标题</h3>
     <input type="text" id="newTitleInput" placeholder="请输入新的标题"><br><br>
-    <button onclick="saveNewTitle()">保存</button>
-    <button class="danger" onclick="closeModal()">关闭</button>
+    <button id="saveTitleBtn">保存</button>
+    <button class="danger" id="closeTitleBtn">关闭</button>
   </div>
 </div>
 
@@ -54,12 +54,37 @@ button:active{transform:scale(0.96);box-shadow:0 2px 6px rgba(0,0,0,0.12);backgr
     <h3>修改密码</h3>
     <input id="oldPwdInput" type="password" placeholder="请输入原密码"><br><br>
     <input id="newPwdInput" type="password" placeholder="请输入新密码"><br><br>
-    <button onclick="changePassword()">确认修改</button>
-    <button class="danger" onclick="closePasswordModal()">关闭</button>
+    <button id="confirmChangePwdBtn">确认修改</button>
+    <button class="danger" id="closePwdBtn">关闭</button>
   </div>
 </div>
 
 <script src="libs/av-min.js"></script>
 <script src="app.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // 重置按钮只通过 JS 绑定
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) resetBtn.addEventListener('click', resetAll);
+
+  const openTitleBtn = document.getElementById('openTitleBtn');
+  if (openTitleBtn) openTitleBtn.addEventListener('click', openModal);
+
+  const closeTitleBtn = document.getElementById('closeTitleBtn');
+  if (closeTitleBtn) closeTitleBtn.addEventListener('click', closeModal);
+
+  const saveTitleBtn = document.getElementById('saveTitleBtn');
+  if (saveTitleBtn) saveTitleBtn.addEventListener('click', saveNewTitle);
+
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) submitBtn.addEventListener('click', submitChoiceHandler);
+
+  const viewBtn = document.getElementById('viewDetailsBtn');
+  if (viewBtn) viewBtn.addEventListener('click', goToDetails);
+
+  const changePwdBtn = document.getElementById('changePwdBtn');
+  if (changePwdBtn) changePwdBtn.addEventListener('click', changePwdViaPrompt);
+});
+</script>
 </body>
 </html>
