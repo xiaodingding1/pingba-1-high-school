@@ -40,6 +40,7 @@ button:active{transform:scale(0.96);box-shadow:0 2px 6px rgba(0,0,0,0.12);backgr
   <button id="changePwdBtn">修改密码</button>
 </div>
 
+<!-- 投票标题修改 modal -->
 <div id="modalBg" class="modal-bg">
   <div class="modal">
     <h3>修改投票标题</h3>
@@ -49,6 +50,7 @@ button:active{transform:scale(0.96);box-shadow:0 2px 6px rgba(0,0,0,0.12);backgr
   </div>
 </div>
 
+<!-- 修改密码 modal -->
 <div id="pwdModalBg" class="modal-bg">
   <div class="modal">
     <h3>修改密码</h3>
@@ -59,13 +61,22 @@ button:active{transform:scale(0.96);box-shadow:0 2px 6px rgba(0,0,0,0.12);backgr
   </div>
 </div>
 
+<!-- 新增：重置投票 modal -->
+<div id="resetPwdModal" class="modal-bg">
+  <div class="modal">
+    <h3>请输入重置密码</h3>
+    <input type="password" id="resetPwdInput" placeholder="请输入密码"><br><br>
+    <button id="confirmResetBtn">确认</button>
+    <button class="danger" id="closeResetBtn">取消</button>
+  </div>
+</div>
+
 <script src="libs/av-min.js"></script>
 <script src="app.js"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  // 重置按钮只通过 JS 绑定
   const resetBtn = document.getElementById('resetBtn');
-  if (resetBtn) resetBtn.addEventListener('click', resetAll);
+  if (resetBtn) resetBtn.addEventListener('click', openResetModal); // 只打开 modal
 
   const openTitleBtn = document.getElementById('openTitleBtn');
   if (openTitleBtn) openTitleBtn.addEventListener('click', openModal);
@@ -84,6 +95,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const changePwdBtn = document.getElementById('changePwdBtn');
   if (changePwdBtn) changePwdBtn.addEventListener('click', changePwdViaPrompt);
+
+  // 重置投票 modal 绑定事件
+  const resetCloseBtn = document.getElementById('closeResetBtn');
+  if (resetCloseBtn) resetCloseBtn.addEventListener('click', closeResetModal);
+
+  const confirmResetBtn = document.getElementById('confirmResetBtn');
+  if (confirmResetBtn) confirmResetBtn.addEventListener('click', confirmResetAll);
 });
 </script>
 </body>
